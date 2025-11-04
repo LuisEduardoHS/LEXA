@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LEXA</string>
+
+    <string name="screen_title_chat">Chat</string>
+    <string name="screen_title_lawyers">Abogados</string>
+    <string name="screen_title_forum">Foro</string>
 </resources>

@@ -4,44 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.lexa.app.ui.navigation.MainScreen // 1. Importa nuestra pantalla principal
 import com.lexa.app.ui.theme.LEXATheme
+import dagger.hilt.android.AndroidEntryPoint
 
+// 2. ¡MUY IMPORTANTE! Esta anotación le dice a Hilt
+// que esta Activity necesitará inyecciones (como ViewModels más adelante).
+// Si la olvidas, la app crasheará.
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 3. Permite que la app se dibuje "de borde a borde" (pantalla completa moderna)
         enableEdgeToEdge()
+
         setContent {
+            // 4. Aplicamos nuestro tema (colores, fuentes)
             LEXATheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                // 5. ¡Mostramos nuestra MainScreen!
+                // Esta pantalla ahora contiene toda la lógica de navegación.
+                MainScreen()
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LEXATheme {
-        Greeting("Android")
     }
 }

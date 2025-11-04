@@ -53,7 +53,7 @@ android {
     }
     composeOptions {
         // Usamos el compilador de Kotlin para Compose
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.12"
     }
     packaging {
         resources {
@@ -92,7 +92,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     // Serialización (JSON a Kotlin) - Más moderno que GSON
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:1.0.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     // OkHttp (El motor de Retrofit, para logs)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 

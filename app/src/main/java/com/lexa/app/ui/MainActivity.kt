@@ -1,4 +1,4 @@
-package com.lexa.app
+package com.lexa.app.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

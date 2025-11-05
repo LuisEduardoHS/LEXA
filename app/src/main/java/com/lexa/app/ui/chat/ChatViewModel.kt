@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.lexa.app.data.models.Content
+import com.lexa.app.data.models.Part
+
+private const val ROLE_USER = "user"
+private const val ROLE_MODEL = "model"
+
 // 1. Estado de la UI: Una lista de mensajes
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
@@ -31,22 +37,23 @@ class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository
 ) : ViewModel() {
     // 5. El prompt que daremos a la IA
-    private val systemPrompt = """
-        Eres Lexa, una asistente legal experta en leyes mexicanas. 
-        Tu propósito es dar orientación clara y fácil de entender.
-        
-        REGLAS ESTRICTAS:
-        1. Eres amable, profesional y tus respuestas son concisas.
-        2. Cuando sea relevante y estés segura, CITA la ley o artículo específico 
-           (ejemplo: 'Según el Artículo 87 de la Ley Federal del Trabajo...').
-        3. Si no estás segura de un artículo exacto, di 'según la ley aplicable' o 
-           'la Ley Federal del Trabajo establece...'.
-        4. NUNCA inventes artículos o leyes. Es mejor ser general que incorrecta.
-        5. NUNCA das consejos financieros, solo orientación legal.
-        6. Siempre empiezas saludando.
-        
-        El usuario te preguntará: 
-    """.trimIndent()
+    private val systemPromptContent = Content(
+        parts = listOf(Part(text = """
+            Eres Lexa, una asistente legal experta en leyes mexicanas. 
+            Tu propósito es dar orientación clara y fácil de entender.
+
+            REGLAS ESTRICTAS:
+            1. Tu audiencia principal son ciudadanos en México. ASUME siempre 
+               que las preguntas legales se refieren al sistema legal mexicano. 
+               NO pidas confirmación de ubicación (ej. "No preguntes '¿Estás en México?').
+            2. Eres amable, profesional y tus respuestas son concisas.
+            3. Cuando sea relevante y estés segura, CITA la ley o artículo específico 
+               (ejemplo: 'Según el Artículo 87 de la Ley Federal del Trabajo...').
+            4. NUNCA inventes artículos o leyes. Es mejor ser general que incorrecta.
+            5. NUNCA das consejos financieros, solo orientación legal.
+        """.trimIndent())),
+        role = ROLE_MODEL
+    )
 
     // 6. El estado (StateFlow) que la UI observara
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -67,10 +74,9 @@ class ChatViewModel @Inject constructor(
     }
 
     // 8. La funcion que la UI llamara para enviar un mensaje
-    fun sendMessage(userMessage: String){
+    fun sendMessage(userMessage: String) {
         if (userMessage.isBlank()) return
 
-        // 9. Agrega el mensaje del usuario a la lista
         _uiState.update {
             it.copy(
                 isLoading = true,
@@ -78,15 +84,15 @@ class ChatViewModel @Inject constructor(
             )
         }
 
-        // 10. Lanza una corutina para llamar a la API
         viewModelScope.launch {
-            // 11. Combinamos el prompt del sistema con la pregunta
-            val fullPrompt = "$systemPrompt $userMessage"
-
-            // 12. Llamamos al repositorio
-            val response = chatRepository.getChatResponse(fullPrompt)
-
-            // 13. Agregamos la respuesta de la IA a la lista
+            val uiHistory = _uiState.value.messages.map { chatMsg ->
+                Content(
+                    parts = listOf(Part(text = chatMsg.text)),
+                    role = if (chatMsg.isFromUser) ROLE_USER else ROLE_MODEL
+                )
+            }
+            val fullApiHistory = listOf(systemPromptContent) + uiHistory
+            val response = chatRepository.getChatResponse(fullApiHistory)
             _uiState.update {
                 it.copy(
                     isLoading = false,

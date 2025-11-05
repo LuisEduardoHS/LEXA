@@ -82,8 +82,8 @@ dependencies {
 
     // ----- INYECCIÓN DE DEPENDENCIAS (HILT) -----
     // Esencial para arquitectura limpia
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    ksp("com.google.dagger:hilt-compiler:2.48.1")
     // Integración de Hilt con Navegación de Compose
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 

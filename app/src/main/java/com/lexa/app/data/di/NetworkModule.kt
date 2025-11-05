@@ -19,8 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://api-inference.huggingface.co/"
-
+    private const val BASE_URL = "https://generativelanguage.googleapis.com/"
     @Provides
     @Singleton
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {

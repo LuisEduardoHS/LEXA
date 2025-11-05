@@ -1,4 +1,5 @@
 // build.gradle.kts (Module :app)
+import java.util.Properties
 
 // 1. Plugins que necesita nuestra app
 plugins {
@@ -21,6 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.lexa.app"
         minSdk = 24 // Android 7.0
+
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -29,6 +31,34 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // 1. Lee el archivo local.properties (ahora "Properties" funciona gracias al import)
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+
+        if (localPropertiesFile.exists()) {
+            // El .use es una extensión de Kotlin, ahora debería ser reconocido
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        } else {
+            localProperties.setProperty("HF_TOKEN", System.getenv("HF_TOKEN") ?: "")
+        }
+
+        // 2. Obtiene el token
+        val hfToken = localProperties.getProperty("HF_TOKEN")
+        if (hfToken.isNullOrEmpty()) {
+            println("ADVERTENCIA: HF_TOKEN no encontrado en local.properties. La app puede fallar.")
+        }
+
+        // 3. Expone el token como una variable de compilación
+        buildConfigField("String", "HF_TOKEN", "\"$hfToken\"")
+
+        // 3. Obtiene el token de Gemini
+        val geminiKey = localProperties.getProperty("GEMINI_API_KEY")
+        if (geminiKey.isNullOrEmpty()) {
+            println("ADVERTENCIA: GEMINI_API_KEY no encontrado en local.properties.")
+        }
+        // 4. Expone el token de Gemini
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
     }
 
     buildTypes {
@@ -50,6 +80,7 @@ android {
     buildFeatures {
         // Habilitamos Jetpack Compose
         compose = true
+        buildConfig = true
     }
     composeOptions {
         // Usamos el compilador de Kotlin para Compose

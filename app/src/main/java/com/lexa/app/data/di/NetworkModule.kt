@@ -2,6 +2,7 @@ package com.lexa.app.data.di
 
 // ¡ESTA ES LA LÍNEA DE IMPORTACIÓN CORRECTA!
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.lexa.app.data.network.AIService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https.api.dummy-ai.com/v1/"
+    private const val BASE_URL = "https://api-inference.huggingface.co/"
 
     @Provides
     @Singleton
@@ -48,5 +49,11 @@ object NetworkModule {
             // Esta línea ahora SÍ encontrará la función gracias al import correcto
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAIService(retrofit: Retrofit): AIService{
+        return retrofit.create(AIService::class.java)
     }
 }

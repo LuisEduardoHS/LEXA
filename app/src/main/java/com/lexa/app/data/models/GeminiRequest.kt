@@ -14,8 +14,8 @@ data class GeminiRequest(
 
 @Serializable
 data class Content(
-    val parts: List<Part>,
-    val role: String
+    val parts: List<Part>? = null,
+    val role: String? = null
 )
 
 @Serializable

@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.lexa.app" />
+                  <option name="mobileSdkAppId" value="1:714462422185:android:cf2b1577fe1744a79135b8" />
+                  <option name="projectId" value="lexa-app-c9dda" />
+                  <option name="projectNumber" value="714462422185" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

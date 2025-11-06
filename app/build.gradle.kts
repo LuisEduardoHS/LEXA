@@ -13,6 +13,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     // Google Maps Secrets (para guardar tu API key de forma segura)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -139,6 +140,14 @@ dependencies {
     // SDK de Mapas para Compose
     implementation("com.google.maps.android:maps-compose:4.4.1")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    // ----- FIREBASE -----
+    // BOM (Bill of Materials) - Maneja las versiones de Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    // Base de datos en tiempo real (para Abogados y Foro)
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Autenticación (para el Foro)
+    implementation("com.google.firebase:firebase-auth-ktx")
 
     // ----- TESTING (Pruebas) -----
     testImplementation("junit:junit:4.13.2")

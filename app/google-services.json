@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "714462422185",
+    "project_id": "lexa-app-c9dda",
+    "storage_bucket": "lexa-app-c9dda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:714462422185:android:cf2b1577fe1744a79135b8",
+        "android_client_info": {
+          "package_name": "com.lexa.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0-2ZkmhabHJjKu71zDcjwLHmoQRw9REU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

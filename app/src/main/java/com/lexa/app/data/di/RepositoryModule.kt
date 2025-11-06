@@ -2,6 +2,8 @@ package com.lexa.app.data.di
 
 import com.lexa.app.data.repository.ChatRepository
 import com.lexa.app.data.repository.ChatRepositoryImpl
+import com.lexa.app.data.repository.LawyerRepository
+import com.lexa.app.data.repository.LawyerRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -16,4 +18,10 @@ abstract class RepositoryModule {
     abstract fun bindChatRepository(
         impl: ChatRepositoryImpl
     ): ChatRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLawyerRepository(
+        impl: LawyerRepositoryImpl
+    ): LawyerRepository
 }

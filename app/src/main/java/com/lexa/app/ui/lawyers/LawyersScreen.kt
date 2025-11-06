@@ -11,12 +11,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun LawyersScreen() {
 
-    // 1. Define una ubicación por defecto (Ciudad de México)
-    val mexicoCity = LatLng(19.4326, -99.1332)
+    // 1. Define una ubicación por defecto
+    val monterrey = LatLng(25.6690, -100.3100)
 
-    // 2. Define el "estado" de la cámara (dónde está, qué tan cerca está)
+    // 2. Define el "estado" de la cámara
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(mexicoCity, 10f)
+        position = CameraPosition.fromLatLngZoom(monterrey, 12f)
     }
 
     // 3. ¡El Composable de Google Maps!

@@ -3,7 +3,10 @@ package com.lexa.app.ui.lawyers
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,11 +23,14 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.lexa.app.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LawyersScreen(
     viewModel: LawyerMapViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val sheetState = rememberModalBottomSheetState()
 
     val monterrey = LatLng(25.6690, -100.3100)
     val cameraPositionState = rememberCameraPositionState {
@@ -58,6 +64,11 @@ fun LawyersScreen(
                             ),
                             title = lawyer.name,
                             snippet = lawyer.specialty,
+
+                            onClick = {
+                                viewModel.selectLawyer(lawyer)
+                                true
+                            }
                         )
                     }
                 }
@@ -73,6 +84,17 @@ fun LawyersScreen(
                 text = (uiState as LawyerMapState.Error).message,
                 modifier = Modifier.align(Alignment.Center)
             )
+        }
+
+        if (uiState is LawyerMapState.Success && (uiState as LawyerMapState.Success).selectedLawyer != null){
+            ModalBottomSheet(
+                onDismissRequest = { viewModel.dismissLawyerDetails() },
+                sheetState = sheetState
+            ) {
+                LawyerDetailSheet(
+                    lawyer = (uiState as LawyerMapState.Success).selectedLawyer!!
+                )
+            }
         }
     }
 }

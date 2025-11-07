@@ -102,6 +102,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.github.jeziellago:compose-markdown:0.4.0")
     // BOM (Bill of Materials) - Nos ayuda a manejar las versiones de Compose
     implementation(platform("androidx.compose:compose-bom:2024.05.00"))
     implementation("androidx.compose.ui:ui")

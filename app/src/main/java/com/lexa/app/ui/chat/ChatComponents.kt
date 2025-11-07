@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import dev.jeziellago.compose.markdowntext.MarkdownText
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.ui.unit.dp
 
 // Barra inferior con el campo de texto y el boton de enviar
@@ -40,20 +45,25 @@ fun ChatInputBar(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         // Campo de texto
         OutlinedTextField(
             value = text,
             onValueChange = onTextChanged,
             placeholder = { Text("Escribe tu duda legal...") },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f) ,
+            shape = RoundedCornerShape(50.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
+
         // Boton de enviar
-        IconButton(onClick = onSendClick){
+        FloatingActionButton(
+            onClick = onSendClick,
+            shape = CircleShape
+        ) {
             Icon(
                 imageVector = Icons.Default.Send,
-                contentDescription = "Enviar mensaje",
-                modifier = Modifier.size(28.dp)
+                contentDescription = "Enviar mensaje"
             )
         }
     }
@@ -95,7 +105,11 @@ fun LexaMessageBubble(text: String, modifier: Modifier = Modifier){
                 .background(MaterialTheme.colorScheme.secondaryContainer)
                 .padding(12.dp)
         ) {
-            Text(text = text, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            MarkdownText(
+                markdown = text,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
         Spacer(modifier = Modifier.weight(1f))
     }

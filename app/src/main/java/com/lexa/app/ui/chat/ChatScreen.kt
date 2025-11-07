@@ -1,12 +1,15 @@
 package com.lexa.app.ui.chat
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -14,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -21,19 +25,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun ChatScreen(
-    // 1. Hilt inyectará automáticamente el ViewModel
     viewModel: ChatViewModel = hiltViewModel()
 ) {
-    // 2. Observamos el estado de la UI desde el ViewModel
     val uiState by viewModel.uiState.collectAsState()
-
-    // 3. Estado local para la barra de texto
     var textState by remember { mutableStateOf(TextFieldValue("")) }
-
-    // 4. Estado para autoscroll
     val listState = rememberLazyListState()
 
-    // 5. Efecto para hacer autoscroll cuando llega un mensaje nuevo
+    // Efecto para autoscroll
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
@@ -42,38 +40,51 @@ fun ChatScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // 6. La lista de mensajes (ahora se alimenta del ViewModel)
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 8.dp),
-            state = listState
-        ) {
-            // 7. Recorremos la lista de mensajes del ViewModel
-            items(uiState.messages) { message ->
-                if (message.isFromUser) {
-                    UserMessageBubble(text = message.text)
-                } else {
-                    LexaMessageBubble(text = message.text)
-                }
+        if (uiState.messages.isEmpty() && !uiState.isLoading) {
+            // 1. Si no hay mensajes Y no está cargando, muestra el prompt
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Escribe tu duda legal para comenzar...",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+        } else {
+            // 2. Si SÍ hay mensajes, muestra la lista
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                state = listState
+            ) {
+                items(uiState.messages) { message ->
+                    if (message.isFromUser) {
+                        UserMessageBubble(text = message.text)
+                    } else {
+                        LexaMessageBubble(text = message.text)
+                    }
+                }
 
-            // 8. Muestra un indicador de carga si la IA está "pensando"
-            if (uiState.isLoading) {
-                item {
-                    LexaMessageBubble(text = "...") // O un indicador de "escribiendo"
+                if (uiState.isLoading) {
+                    item {
+                        LexaMessageBubble(text = "...")
+                    }
                 }
             }
         }
 
-        // 9. La barra de input
+        // 3. La barra de input siempre se muestra
         ChatInputBar(
             text = textState,
             onTextChanged = { textState = it },
             onSendClick = {
-                // 10. ¡Llama al ViewModel para enviar el mensaje!
                 viewModel.sendMessage(textState.text)
-                // Limpia el texto
                 textState = TextFieldValue("")
             }
         )

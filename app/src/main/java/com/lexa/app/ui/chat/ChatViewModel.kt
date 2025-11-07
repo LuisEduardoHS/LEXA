@@ -3,23 +3,28 @@ package com.lexa.app.ui.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lexa.app.data.local.ChatMessageEntity
+import com.lexa.app.data.local.ChatSessionEntity
 import com.lexa.app.data.models.Content
 import com.lexa.app.data.models.Part
 import com.lexa.app.data.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 
-// Roles para la API de Gemini
 private const val ROLE_USER = "user"
 private const val ROLE_MODEL = "model"
 
-// "Cerebro" de Lexa (System Prompt)
 private val systemPromptContent = Content(
     parts = listOf(Part(text = """
         Eres Lexa, una asistente legal experta en leyes mexicanas. 
@@ -41,6 +46,8 @@ private val systemPromptContent = Content(
 // Estado de la UI
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
+    val allSessions: List<ChatSessionEntity> = emptyList(),
+    val currentSessionId: Long? = null, // Inicia en null (chat nuevo)
     val isLoading: Boolean = false
 )
 
@@ -58,72 +65,95 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    init {
-        // Lógica de Room
-        viewModelScope.launch {
-            chatRepository.getChatHistory()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val messagesFlow = _uiState.flatMapLatest { state ->
+        if (state.currentSessionId != null) {
+            chatRepository.getMessagesForSession(state.currentSessionId)
                 .map { entities ->
-                    entities.map { entity ->
-                        ChatMessage(
-                            text = entity.text,
-                            isFromUser = entity.role == ROLE_USER
-                        )
-                    }
+                    entities.map { ChatMessage(it.text, it.role == ROLE_USER) }
                 }
-                .collect { messages ->
-                    _uiState.update { it.copy(messages = messages) }
-                }
+        } else {
+            // Si el ID es null (chat nuevo), devuelve una lista vacía
+            flowOf(emptyList())
         }
     }
 
-    // Función de envío
-    fun sendMessage(userMessage: String) {
-        if (userMessage.isBlank()) return
-
-        // 1. Crear entidad de USUARIO
-        val userMessageUi = ChatMessage(text = userMessage, isFromUser = true) // <-- Modelo de UI
-        val userMessageEntity = ChatMessageEntity( // <-- Modelo de DB
-            text = userMessage,
-            role = ROLE_USER,
-            timestamp = System.currentTimeMillis()
-        )
-
-        // 2. Actualiza la UI INMEDIATAMENTE con el mensaje del usuario
-        _uiState.update {
-            it.copy(
-                isLoading = true,
-                messages = it.messages + userMessageUi
-            )
+    init {
+        // Al iniciar, SÓLO cargamos la lista de chats
+        viewModelScope.launch {
+            chatRepository.getAllSessions().collect { sessions ->
+                _uiState.update { it.copy(allSessions = sessions) }
+            }
         }
 
         viewModelScope.launch {
-            // 3. Guardar mensaje de USUARIO en Room
+            messagesFlow.collect { messages ->
+                _uiState.update { it.copy(messages = messages) }
+            }
+        }
+    }
+
+    // Función para crear un chat
+    fun createNewSession() {
+        _uiState.update { it.copy(currentSessionId = null) }
+    }
+
+    // Función para cambiar de chat
+    fun loadSession(sessionId: Long) {
+        _uiState.update { it.copy(currentSessionId = sessionId) }
+    }
+
+    fun sendMessage(userMessage: String) {
+        if (userMessage.isBlank() || _uiState.value.isLoading) return
+
+        viewModelScope.launch {
+
+            val sessionId = if (_uiState.value.currentSessionId == null) {
+
+                val newId = chatRepository.createNewSession(userMessage.take(30) + "...")
+
+                _uiState.update { it.copy(currentSessionId = newId) }
+                newId
+            } else {
+                _uiState.value.currentSessionId!!
+            }
+
+            val userMessageEntity = ChatMessageEntity(
+                sessionId = sessionId,
+                text = userMessage,
+                role = ROLE_USER,
+                timestamp = System.currentTimeMillis()
+            )
+
+            // Guardar mensaje de USUARIO en Room
             chatRepository.saveMessage(userMessageEntity)
 
-            // 4. Construir historial de la UI
-            val uiHistory = _uiState.value.messages.map { chatMsg ->
+            // Activar "Cargando"
+            _uiState.update { it.copy(isLoading = true) }
+
+            // Construir historial de la UI
+            val uiHistory = messagesFlow.first().map { chatMsg ->
                 Content(
                     parts = listOf(Part(text = chatMsg.text)),
                     role = if (chatMsg.isFromUser) ROLE_USER else ROLE_MODEL
                 )
             }
-
-            // 5. Combinar el "cerebro" + el historial
             val fullApiHistory = listOf(systemPromptContent) + uiHistory
 
-            // 6. Llama al repositorio con el historial COMPLETO
-            val response = chatRepository.getChatResponse(fullApiHistory)
+            // Llama al repositorio (API)
+            val response = chatRepository.getApiResponse(fullApiHistory)
 
-            // 7. Crear entidad de MODELO
+            // Crear entidad de MODELO (IA)
             val modelMessageEntity = ChatMessageEntity(
+                sessionId = sessionId,
                 text = response,
                 role = ROLE_MODEL,
                 timestamp = System.currentTimeMillis()
             )
-            // 8. Guardar respuesta de IA en Room
+            // Guardar respuesta de IA en Room
             chatRepository.saveMessage(modelMessageEntity)
 
-            // 9. Desactivar "Cargando"
+            // Desactivar "Cargando"
             _uiState.update { it.copy(isLoading = false) }
         }
     }

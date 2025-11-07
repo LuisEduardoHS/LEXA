@@ -3,6 +3,7 @@ package com.lexa.app.data.repository
 import com.lexa.app.BuildConfig
 import com.lexa.app.data.local.ChatDao
 import com.lexa.app.data.local.ChatMessageEntity
+import com.lexa.app.data.local.ChatSessionEntity
 import com.lexa.app.data.models.Content
 import com.lexa.app.data.models.GeminiRequest
 import com.lexa.app.data.models.Part
@@ -17,9 +18,32 @@ class ChatRepositoryImpl @Inject constructor(
 
     private val apiKey = BuildConfig.GEMINI_API_KEY
 
-    override suspend fun getChatResponse(history: List<Content>): String {
-        val request = GeminiRequest(contents = history)
+    override suspend fun createNewSession(title: String): Long {
+        val newSession = ChatSessionEntity(
+            title = title,
+            timestamp = System.currentTimeMillis()
+        )
+        return chatDao.insertSession(newSession)
+    }
 
+    override fun getAllSessions(): Flow<List<ChatSessionEntity>> {
+        return chatDao.getAllSessions()
+    }
+
+    override suspend fun deleteSession(sessionId: Long) {
+        chatDao.deleteSession(sessionId)
+    }
+
+    override suspend fun saveMessage(message: ChatMessageEntity) {
+        chatDao.insertMessage(message)
+    }
+
+    override fun getMessagesForSession(sessionId: Long): Flow<List<ChatMessageEntity>> {
+        return chatDao.getMessagesForSession(sessionId)
+    }
+
+    override suspend fun getApiResponse(history: List<Content>): String {
+        val request = GeminiRequest(contents = history)
         try {
             val response = apiService.generateContent(apiKey = apiKey, request = request)
             val textResponse = response.candidates?.firstOrNull()
@@ -43,11 +67,4 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveMessage(message: ChatMessageEntity) {
-        chatDao.insertMessage(message)
-    }
-
-    override fun getChatHistory(): Flow<List<ChatMessageEntity>> {
-        return chatDao.getAllMessages()
-    }
 }

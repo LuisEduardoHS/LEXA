@@ -24,7 +24,9 @@ object DatabaseModule {
             context = context,
             klass = LexaDatabase::class.java,
             name = "lexa_app.db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

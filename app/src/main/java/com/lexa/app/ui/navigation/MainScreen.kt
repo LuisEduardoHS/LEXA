@@ -2,17 +2,22 @@ package com.lexa.app.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -36,30 +41,39 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen() {
     val chatViewModel: ChatViewModel = hiltViewModel()
-
-    // Controladores para el Menú y la Navegación
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    val chatUiState by chatViewModel.uiState.collectAsState()
+
+    // Menú Hamburguesa
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            // CONTENIDO del menú
-            ModalDrawerSheet {
 
-                Text("Contenido del Menú Hamburguesa", modifier = Modifier.padding(16.dp))
+            ModalDrawerSheet {
+                DrawerContent(
+                    sessions = chatUiState.allSessions,
+                    onSessionClick = { sessionId ->
+                        chatViewModel.loadSession(sessionId)
+                        scope.launch { drawerState.close() }
+                    },
+                    onNewChatClick = {
+                        chatViewModel.createNewSession()
+                        scope.launch { drawerState.close() }
+                    }
+                )
             }
         }
     ) {
-        // CONTENIDO PRINCIPALe)
+        // El CONTENIDO PRINCIPAL de la app
         Scaffold(
-            // ARRA INFERIOR
+            // Barra Inferior
             bottomBar = {
                 NavigationBar {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
-
                     bottomNavScreens.forEach { screen ->
                         NavigationBarItem(
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
@@ -70,21 +84,33 @@ fun MainScreen() {
                                     restoreState = true
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(id = screen.icon),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
+                            icon = { Icon(painterResource(id = screen.icon), null, modifier = Modifier.size(24.dp)) },
                             label = { Text(stringResource(id = screen.title)) }
                         )
                     }
                 }
             },
+
             // BARRA SUPERIOR
             topBar = {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
 
+                if (currentRoute == AppScreen.Chat.route) {
+                    TopAppBar(
+                        title = { Text("Asistente Legal Lexa") },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                scope.launch { drawerState.open() }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Abrir menú de chats"
+                                )
+                            }
+                        }
+                    )
+                }
             }
         ) { innerPadding ->
             NavHost(
@@ -92,7 +118,6 @@ fun MainScreen() {
                 startDestination = AppScreen.Chat.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-
                 composable(AppScreen.Chat.route) {
                     ChatScreen(viewModel = chatViewModel)
                 }

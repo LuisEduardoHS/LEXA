@@ -21,17 +21,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun ChatScreen(
-    viewModel: ChatViewModel = hiltViewModel()
+    viewModel: ChatViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
     var textState by remember { mutableStateOf(TextFieldValue("")) }
     val listState = rememberLazyListState()
 
-    // Efecto para autoscroll
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem(uiState.messages.size - 1)
@@ -41,12 +40,8 @@ fun ChatScreen(
     Column(modifier = Modifier.fillMaxSize()) {
 
         if (uiState.messages.isEmpty() && !uiState.isLoading) {
-            // 1. Si no hay mensajes Y no está cargando, muestra el prompt
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -56,11 +51,8 @@ fun ChatScreen(
                 )
             }
         } else {
-            // 2. Si SÍ hay mensajes, muestra la lista
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 8.dp),
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                 state = listState
             ) {
                 items(uiState.messages) { message ->
@@ -72,14 +64,11 @@ fun ChatScreen(
                 }
 
                 if (uiState.isLoading) {
-                    item {
-                        LexaMessageBubble(text = "...")
-                    }
+                    item { LexaMessageBubble(text = "...") }
                 }
             }
         }
 
-        // 3. La barra de input siempre se muestra
         ChatInputBar(
             text = textState,
             onTextChanged = { textState = it },

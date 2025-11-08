@@ -118,6 +118,8 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
 
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
     // ----- INYECCIÓN DE DEPENDENCIAS (HILT) -----
     // Esencial para arquitectura limpia
     implementation("com.google.dagger:hilt-android:2.48.1")

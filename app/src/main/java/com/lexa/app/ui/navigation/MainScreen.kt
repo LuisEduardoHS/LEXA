@@ -47,9 +47,15 @@ fun MainScreen() {
 
     val chatUiState by chatViewModel.uiState.collectAsState()
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val gesturesEnabled = currentRoute == AppScreen.Chat.route
+
     // Menú Hamburguesa
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = gesturesEnabled,
         drawerContent = {
 
             ModalDrawerSheet {

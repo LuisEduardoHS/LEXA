@@ -35,6 +35,10 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.lexa.app.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.maps.android.compose.MapProperties
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +46,7 @@ fun LawyersScreen(
     viewModel: LawyerMapViewModel = hiltViewModel()
 ) {
     val locationPermissionState = rememberPermissionState(
-        permission = Manifest.permission.ACCESS_FINE_LOCATION
+        permission = Manifest.permission.ACCESS_FINE_LOCATION,
     )
 
     LaunchedEffect(Unit) {
@@ -51,6 +55,9 @@ fun LawyersScreen(
 
     when {
         locationPermissionState.status.isGranted -> {
+            LaunchedEffect(Unit) {
+                viewModel.fetchCurrentLocation()
+            }
             LawyerMapContent(viewModel = viewModel)
         }
 
@@ -83,15 +90,32 @@ fun LawyerMapContent(viewModel: LawyerMapViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
     val monterrey = LatLng(25.6690, -100.3100)
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(monterrey, 12f)
+    }
+
+    val scope = rememberCoroutineScope()
+
+    if (uiState is LawyerMapState.Success && (uiState as LawyerMapState.Success).userLocation != null) {
+        val userLocation = (uiState as LawyerMapState.Success).userLocation!!
+        LaunchedEffect(userLocation) {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(userLocation, 15f)
+            )
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
-            uiSettings = MapUiSettings(zoomControlsEnabled = false)
+
+            properties = MapProperties(isMyLocationEnabled = true),
+            uiSettings = MapUiSettings(
+                zoomControlsEnabled = false,
+                myLocationButtonEnabled = true
+            )
         ) {
             when (val state = uiState) {
                 is LawyerMapState.Loading -> {}

@@ -9,5 +9,6 @@ data class Lawyer(
 
     val name: String = "",
     val specialty: String = "",
-    val location: GeoPoint? = null
+    val location: GeoPoint? = null,
+    val imageUrl: String? = null
 )

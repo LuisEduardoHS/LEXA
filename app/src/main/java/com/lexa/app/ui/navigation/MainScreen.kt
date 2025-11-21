@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,11 +31,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.lexa.app.ui.auth.AuthViewModel
+import com.lexa.app.ui.auth.LoginScreen
 import com.lexa.app.ui.chat.ChatScreen
 import com.lexa.app.ui.chat.ChatViewModel
-import com.lexa.app.ui.auth.AuthViewModel
 import com.lexa.app.ui.forum.ForumScreen
-import com.lexa.app.ui.auth.LoginScreen
 import com.lexa.app.ui.forum.NewPostScreen
 import com.lexa.app.ui.lawyers.LawyersScreen
 import kotlinx.coroutines.launch

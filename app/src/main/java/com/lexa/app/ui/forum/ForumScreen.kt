@@ -20,10 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.lexa.app.ui.navigation.AppScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForumScreen(
+    navController: NavController,
     viewModel: ForumViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -32,7 +35,7 @@ fun ForumScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-
+                    navController.navigate(AppScreen.NewPost.route)
                 }
             ) {
                 Icon(

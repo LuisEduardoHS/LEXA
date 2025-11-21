@@ -5,4 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface ForumRepository {
     fun getPosts(): Flow<List<Post>>
+
+    suspend fun createPost(content: String, author: String): Result<Unit>
 }

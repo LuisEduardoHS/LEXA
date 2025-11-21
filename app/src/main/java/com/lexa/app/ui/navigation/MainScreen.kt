@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.lexa.app.ui.chat.ChatScreen
 import com.lexa.app.ui.chat.ChatViewModel
 import com.lexa.app.ui.forum.ForumScreen
+import com.lexa.app.ui.forum.NewPostScreen
 import com.lexa.app.ui.lawyers.LawyersScreen
 import kotlinx.coroutines.launch
 
@@ -128,7 +129,13 @@ fun MainScreen() {
                     ChatScreen(viewModel = chatViewModel)
                 }
                 composable(AppScreen.Lawyers.route) { LawyersScreen() }
-                composable(AppScreen.Forum.route) { ForumScreen() }
+                composable(AppScreen.Forum.route) { ForumScreen(navController) }
+
+                composable(AppScreen.NewPost.route) {
+                    NewPostScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }

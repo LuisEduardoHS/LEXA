@@ -30,6 +30,12 @@ sealed class AppScreen (
         title = R.string.screen_title_forum,
         icon = R.drawable.ic_forum
     )
+
+    data object NewPost : AppScreen(
+        route = "new_post",
+        title = R.string.screen_title_forum,
+        icon = R.drawable.ic_forum
+    )
 }
 
 val bottomNavScreens = listOf(

@@ -1,6 +1,5 @@
 package com.lexa.app.data.repository
 
-import androidx.room.Insert
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
 import com.lexa.app.data.models.Lawyer

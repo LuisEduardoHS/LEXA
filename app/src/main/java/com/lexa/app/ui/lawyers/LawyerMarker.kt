@@ -45,7 +45,7 @@ fun LawyerMarker(
             val loader = ImageLoader(context)
             val request = ImageRequest.Builder(context)
                 .data(imageUrl)
-                .allowHardware(false) // ¡CRUCIAL PARA MAPAS!
+                .allowHardware(false)
                 .build()
 
             // Descargamos la imagen en segundo plano
@@ -69,7 +69,6 @@ fun LawyerMarker(
     ) {
         // 4. Lógica de visualización
         if (imageBitmap != null) {
-            // SI YA DESCARGÓ: Mostramos la foto real
             Image(
                 bitmap = imageBitmap!!.asImageBitmap(), // Convertimos a formato Compose
                 contentDescription = "Foto abogado",
@@ -79,12 +78,12 @@ fun LawyerMarker(
                     .clip(CircleShape)
             )
         } else {
-            // SI NO HA DESCARGADO (o falló): Mostramos el icono rojo
+            // Mostramos el icono rojo
             Image(
-                painter = painterResource(id = R.drawable.ic_lawyer_pin_red),
+                painter = painterResource(id = R.drawable.ic_user),
                 contentDescription = "Loading",
                 modifier = Modifier
-                    .size(32.dp) // Un poco más chico para que se vea bien dentro
+                    .size(32.dp)
             )
         }
     }

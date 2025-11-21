@@ -1,7 +1,6 @@
 package com.lexa.app.data.di
 
 import android.content.Context
-import androidx.room.Insert
 import androidx.room.Room
 import com.lexa.app.data.local.ChatDao
 import com.lexa.app.data.local.LexaDatabase

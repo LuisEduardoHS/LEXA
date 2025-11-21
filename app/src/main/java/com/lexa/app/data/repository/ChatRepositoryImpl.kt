@@ -6,7 +6,6 @@ import com.lexa.app.data.local.ChatMessageEntity
 import com.lexa.app.data.local.ChatSessionEntity
 import com.lexa.app.data.models.Content
 import com.lexa.app.data.models.GeminiRequest
-import com.lexa.app.data.models.Part
 import com.lexa.app.data.network.AIService
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

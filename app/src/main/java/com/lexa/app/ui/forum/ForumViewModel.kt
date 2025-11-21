@@ -3,6 +3,7 @@ package com.lexa.app.ui.forum
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lexa.app.data.models.Post
+import com.lexa.app.data.repository.AuthRepository
 import com.lexa.app.data.repository.ForumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -28,7 +29,8 @@ sealed interface ForumEvent {
 
 @HiltViewModel
 class ForumViewModel @Inject constructor(
-    private val repository: ForumRepository
+    private val repository: ForumRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
     val uiState: StateFlow<ForumUiState> = repository.getPosts()
         .map { ForumUiState.Success(it) as ForumUiState }
@@ -44,9 +46,17 @@ class ForumViewModel @Inject constructor(
 
     fun createPost(content: String) {
         viewModelScope.launch {
-            val authorName = "Usuario Anonimo"
 
-            val result = repository.createPost(content, authorName)
+            // 1. Obtenemos el correo del usuario actual
+            val email = authRepository.getCurrentUserEmail()
+
+            // 2. TRUCO ESTÉTICO:
+            // Si el correo es "juan@gmail.com", nos quedamos solo con "juan".
+            // Si por alguna razón no hay correo, ponemos "Usuario de LEXA".
+            val niceName = email?.substringBefore("@") ?: "Usuario de LEXA"
+
+            // 3. Creamos el post con ese nombre bonito
+            val result = repository.createPost(content, niceName)
 
             if (result.isSuccess) {
                 _events.send(ForumEvent.PostCreated)

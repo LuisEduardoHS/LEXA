@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,7 +34,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.lexa.app.ui.chat.ChatScreen
 import com.lexa.app.ui.chat.ChatViewModel
+import com.lexa.app.ui.auth.AuthViewModel
 import com.lexa.app.ui.forum.ForumScreen
+import com.lexa.app.ui.auth.LoginScreen
 import com.lexa.app.ui.forum.NewPostScreen
 import com.lexa.app.ui.lawyers.LawyersScreen
 import kotlinx.coroutines.launch
@@ -41,24 +44,48 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
+    // 1. Inyectamos el ViewModel de Auth
+    val authViewModel: AuthViewModel = hiltViewModel()
+
+    // 2. Observamos el estado de login en TIEMPO REAL
+    //    (Usa el Flow que creamos hace un momento)
+    val isLoggedIn by authViewModel.userLoggedInFlow.collectAsState(
+        initial = authViewModel.isUserLoggedIn()
+    )
+
+    // 3. Decidimos qué pantalla mostrar
+    if (!isLoggedIn) {
+        LoginScreen(
+            onLoginSuccess = {
+                // No necesitamos hacer nada aquí, el Flow se actualizará solo
+            }
+        )
+    } else {
+        AuthenticatedAppContent()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AuthenticatedAppContent() {
+    // ... (El resto de tu código de AuthenticatedAppContent se queda IGUAL)
+    // (Copia y pega el bloque grande que ya tenías para el Drawer, Scaffold, etc.)
+    // Si lo borraste, avísame y te lo paso completo de nuevo.
+
     val chatViewModel: ChatViewModel = hiltViewModel()
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
     val chatUiState by chatViewModel.uiState.collectAsState()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
     val gesturesEnabled = currentRoute == AppScreen.Chat.route
 
-    // Menú Hamburguesa
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = gesturesEnabled,
         drawerContent = {
-
             ModalDrawerSheet {
                 DrawerContent(
                     sessions = chatUiState.allSessions,
@@ -74,12 +101,10 @@ fun MainScreen() {
             }
         }
     ) {
-        // El CONTENIDO PRINCIPAL de la app
         Scaffold(
-            // Barra Inferior
             bottomBar = {
                 NavigationBar {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    // (Repite tu código de la barra de navegación)
                     val currentDestination = navBackStackEntry?.destination
                     bottomNavScreens.forEach { screen ->
                         NavigationBarItem(
@@ -97,23 +122,13 @@ fun MainScreen() {
                     }
                 }
             },
-
-            // BARRA SUPERIOR
             topBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
                 if (currentRoute == AppScreen.Chat.route) {
                     TopAppBar(
                         title = { Text("Asistente Legal Lexa") },
                         navigationIcon = {
-                            IconButton(onClick = {
-                                scope.launch { drawerState.open() }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Abrir menú de chats"
-                                )
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, "Menú")
                             }
                         }
                     )
@@ -125,16 +140,11 @@ fun MainScreen() {
                 startDestination = AppScreen.Chat.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(AppScreen.Chat.route) {
-                    ChatScreen(viewModel = chatViewModel)
-                }
+                composable(AppScreen.Chat.route) { ChatScreen(viewModel = chatViewModel) }
                 composable(AppScreen.Lawyers.route) { LawyersScreen() }
                 composable(AppScreen.Forum.route) { ForumScreen(navController) }
-
                 composable(AppScreen.NewPost.route) {
-                    NewPostScreen(
-                        onNavigateBack = { navController.popBackStack() }
-                    )
+                    NewPostScreen(onNavigateBack = { navController.popBackStack() })
                 }
             }
         }

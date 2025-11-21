@@ -36,6 +36,12 @@ sealed class AppScreen (
         title = R.string.screen_title_forum,
         icon = R.drawable.ic_forum
     )
+
+    data object Login : AppScreen(
+        route = "Login",
+        title = R.string.app_name,
+        icon = R.drawable.ic_chat
+    )
 }
 
 val bottomNavScreens = listOf(

@@ -1,5 +1,7 @@
 package com.lexa.app.data.di
 
+import com.lexa.app.data.repository.AuthRepository
+import com.lexa.app.data.repository.AuthRepositoryImpl
 import com.lexa.app.data.repository.ChatRepository
 import com.lexa.app.data.repository.ChatRepositoryImpl
 import com.lexa.app.data.repository.ForumRepository
@@ -32,4 +34,10 @@ abstract class RepositoryModule {
     abstract fun bindForumRepository(
         impl: ForumRepositoryImpl
     ): ForumRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        impl: AuthRepositoryImpl
+    ): AuthRepository
 }
